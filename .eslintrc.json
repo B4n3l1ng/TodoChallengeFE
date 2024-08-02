@@ -16,7 +16,14 @@
       "jsx": true
     }
   },
-  "plugins": ["react", "react-hooks", "jsx-a11y", "@typescript-eslint", "prettier"],
+  "plugins": [
+    "react",
+    "react-hooks",
+    "jsx-a11y",
+    "@typescript-eslint",
+    "prettier",
+    "simple-import-sort"
+  ],
   "rules": {
     "react/jsx-filename-extension": [1, { "extensions": [".jsx", ".tsx"] }],
     "import/extensions": [
@@ -30,7 +37,9 @@
       }
     ],
     "react/react-in-jsx-scope": "off",
-    "prettier/prettier": "error" // Add this line
+    "prettier/prettier": "error",
+    "simple-import-sort/imports": "error",
+    "simple-import-sort/exports": "error"
   },
   "settings": {
     "import/resolver": {
