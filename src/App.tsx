@@ -1,10 +1,16 @@
-import './App.css';
+import { ConfigProvider, Space, theme } from 'antd';
 
 function App() {
   return (
-    <div className="App">
-      <h1>Test</h1>
-    </div>
+    <ConfigProvider
+      theme={{
+        algorithm: theme.darkAlgorithm,
+      }}
+    >
+      <Space>
+        <h1>A test</h1>
+      </Space>
+    </ConfigProvider>
   );
 }
 
