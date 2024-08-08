@@ -17,10 +17,21 @@ function TaskItem({ item }: props) {
     return <p>Loading...</p>;
   }
 
+  const { changeTaskState } = taskContext;
+
+  const onClickCheckbox = () => {
+    changeTaskState(item.id, {
+      state: item.state === 'COMPLETE' ? 'INCOMPLETE' : 'COMPLETE',
+    });
+  };
+
   return (
     <List.Item>
       <div className="list-item-left">
-        <Checkbox checked={item.state === 'COMPLETE'} />
+        <Checkbox
+          checked={item.state === 'COMPLETE'}
+          onChange={onClickCheckbox}
+        />
         {!isEditing ? (
           <Typography className="list-item-description">
             {item.description}

@@ -6,7 +6,7 @@ export interface Task {
   completedAt: Date | null;
 }
 
-export interface State {
+export interface TaskState {
   tasks: Task[];
   isLoading: boolean;
   needsReload: boolean;
@@ -14,7 +14,7 @@ export interface State {
 
 export interface Query {
   filter?: 'COMPLETE' | 'INCOMPLETE' | 'ALL';
-  orderBy?: 'CREATED_AT' | 'COMPLETED_AT' | 'DESCRIPTION';
+  orderBy?: 'CREATED_AT' | 'COMPLETED_AT' | 'Z-A' | 'A-Z';
 }
 
 export type TaskAction =

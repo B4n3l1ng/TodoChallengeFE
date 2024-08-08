@@ -7,25 +7,33 @@ import {
   useState,
 } from 'react';
 
-import { Query, State, TaskAction } from '../interfaces/interfaces';
+import { Query, TaskAction, TaskState } from '../interfaces/interfaces';
+
+type ChangeTaskState = (
+  id: string,
+  payload: { state: 'COMPLETE' | 'INCOMPLETE' },
+) => Promise<void>;
 
 interface TaskContextProviderProps {
   children: ReactNode;
 }
 
-export interface TaskContextType {
-  state: State;
+interface TaskContextType {
+  state: TaskState;
   fetchTasks: (query: Query) => Promise<void>;
   createTask: (payload: { description: string }) => Promise<void>;
+  changeTaskState: ChangeTaskState;
+  queryState: Query;
   setQueryState: React.Dispatch<React.SetStateAction<Query>>;
   dispatch: React.Dispatch<TaskAction>;
+  sortTasks: () => void;
 }
 
 export const TaskContext = createContext<TaskContextType | undefined>(
   undefined,
 );
 
-function reducer(state: State, action: TaskAction) {
+function reducer(state: TaskState, action: TaskAction) {
   switch (action.type) {
     case 'SET_TASKS':
       return { tasks: action.payload, isLoading: false, needsReload: false };
@@ -37,7 +45,7 @@ function reducer(state: State, action: TaskAction) {
       return state;
   }
 }
-const initialState: State = {
+const initialState: TaskState = {
   tasks: [],
   isLoading: true,
   needsReload: true,
@@ -46,6 +54,23 @@ const initialState: State = {
 function TaskContextProvider({ children }: TaskContextProviderProps) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [queryState, setQueryState] = useState<Query>({});
+  const tasksOrderArray = ['CREATED_AT', 'A-Z', 'Z-A'];
+  const [currentOrderIndex, setCurrentOrderIndex] = useState(0);
+
+  const sortTasks = () => {
+    const newIndex =
+      currentOrderIndex === tasksOrderArray.length - 1
+        ? 0
+        : currentOrderIndex + 1;
+    setCurrentOrderIndex(
+      currentOrderIndex === tasksOrderArray.length - 1
+        ? 0
+        : currentOrderIndex + 1,
+    );
+    const newOrder = tasksOrderArray[newIndex] as 'A-Z' | 'Z-A' | 'CREATED_AT';
+    setQueryState({ ...queryState, orderBy: newOrder });
+    dispatch({ type: 'SET_NEEDS_RELOAD', payload: true });
+  };
 
   const fetchTasks = async (query: Query) => {
     let url = `${process.env.REACT_APP_API_URL}/todos`;
@@ -55,7 +80,10 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
       params.append('filter', query.filter);
     }
     if (query.orderBy) {
-      params.append('orderBy', query.orderBy);
+      params.append(
+        'orderBy',
+        query.orderBy === 'CREATED_AT' ? query.orderBy : 'DESCRIPTION',
+      );
     }
 
     if (params.toString()) {
@@ -66,8 +94,11 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
       const response = await fetch(url);
 
       if (response.status === 200) {
-        const parsedResponse = await response.json();
-        dispatch({ type: 'SET_TASKS', payload: parsedResponse.todos });
+        const { todos } = await response.json();
+        if (query.orderBy === 'Z-A') {
+          todos.reverse();
+        }
+        dispatch({ type: 'SET_TASKS', payload: todos });
       }
     } catch (error) {
       console.error(error);
@@ -90,6 +121,24 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
     }
   };
 
+  const changeTaskState: ChangeTaskState = async (id, payload) => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/todo/${id}`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify(payload),
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+      if (response.status === 202) {
+        dispatch({ type: 'SET_NEEDS_RELOAD', payload: true });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     if (state.needsReload) {
       fetchTasks(queryState);
@@ -101,8 +150,11 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
       state,
       fetchTasks,
       createTask,
+      changeTaskState,
+      queryState,
       setQueryState,
       dispatch,
+      sortTasks,
     }),
     [state],
   );

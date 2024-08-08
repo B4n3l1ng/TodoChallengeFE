@@ -12,7 +12,7 @@ function TaskList() {
     return <div>Loading...</div>;
   }
 
-  const { state, setQueryState, dispatch } = taskContext;
+  const { state, sortTasks, setQueryState, dispatch } = taskContext;
 
   const onChange: CheckboxProps['onChange'] = (e) => {
     setCheckboxState(e.target.checked);
@@ -20,15 +20,36 @@ function TaskList() {
     dispatch({ type: 'SET_NEEDS_RELOAD', payload: true });
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      sortTasks();
+    }
+  };
+
   return (
     <>
-      <Divider orientation="left">Tasks</Divider>
+      <Divider orientation="left">
+        <div
+          onClick={sortTasks}
+          onKeyDown={handleKeyDown}
+          tabIndex={0}
+          role="button"
+          aria-label="Sort tasks"
+        >
+          Tasks
+        </div>
+      </Divider>
       <List
         bordered
         dataSource={state.tasks}
         renderItem={(item) => <TaskItem item={item} />}
       />
-      <Checkbox checked={checkboxState} onChange={onChange}>
+      <Checkbox
+        style={{ textAlign: 'left' }}
+        checked={checkboxState}
+        onChange={onChange}
+      >
         Hide complete
       </Checkbox>
     </>
