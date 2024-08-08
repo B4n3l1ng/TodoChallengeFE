@@ -1,16 +1,13 @@
-import { ConfigProvider, Space, theme } from 'antd';
+import TaskForm from './components/CreationForm';
+import TaskList from './components/TaskList';
 
 function App() {
   return (
-    <ConfigProvider
-      theme={{
-        algorithm: theme.darkAlgorithm,
-      }}
-    >
-      <Space>
-        <h1>A test</h1>
-      </Space>
-    </ConfigProvider>
+    <div className="wrapper">
+      <TaskForm />
+
+      <TaskList />
+    </div>
   );
 }
 
