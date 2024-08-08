@@ -17,7 +17,7 @@ function TaskItem({ item }: props) {
     return <p>Loading...</p>;
   }
 
-  const { changeTaskState } = taskContext;
+  const { changeTaskState, editTask } = taskContext;
 
   const onClickCheckbox = () => {
     changeTaskState(item.id, {
@@ -47,7 +47,19 @@ function TaskItem({ item }: props) {
       </div>
 
       <div className="btn-group">
-        {isEditing && <Button type="primary">Save</Button>}
+        {isEditing && (
+          <Button
+            type="primary"
+            onClick={() =>
+              editTask(item.id, {
+                state: item.state,
+                description: newDescription,
+              })
+            }
+          >
+            Save
+          </Button>
+        )}
         <Button
           type="primary"
           onClick={() => {

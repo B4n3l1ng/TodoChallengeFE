@@ -1,6 +1,8 @@
+import { notification } from 'antd';
 import {
   createContext,
   ReactNode,
+  Reducer,
   useEffect,
   useMemo,
   useReducer,
@@ -23,32 +25,50 @@ interface TaskContextType {
   fetchTasks: (query: Query) => Promise<void>;
   createTask: (payload: { description: string }) => Promise<void>;
   changeTaskState: ChangeTaskState;
+  editTask: (
+    id: string,
+    payload: { description?: string; state?: 'COMPLETE' | 'INCOMPLETE' },
+  ) => Promise<void>;
   queryState: Query;
   setQueryState: React.Dispatch<React.SetStateAction<Query>>;
   dispatch: React.Dispatch<TaskAction>;
   sortTasks: () => void;
 }
 
+notification.config({
+  placement: 'bottomLeft',
+  bottom: 50,
+  duration: 5,
+});
+
 export const TaskContext = createContext<TaskContextType | undefined>(
   undefined,
 );
 
-function reducer(state: TaskState, action: TaskAction) {
+const reducer: Reducer<TaskState, TaskAction> = (state, action) => {
   switch (action.type) {
     case 'SET_TASKS':
-      return { tasks: action.payload, isLoading: false, needsReload: false };
+      return {
+        tasks: action.payload,
+        isLoading: false,
+        needsReload: false,
+        error: null,
+      };
     case 'SET_IS_LOADING':
       return { ...state, isLoading: action.payload };
     case 'SET_NEEDS_RELOAD':
       return { ...state, needsReload: action.payload };
+    case 'SET_ERROR':
+      return { ...state, isLoading: false, error: action.payload };
     default:
       return state;
   }
-}
+};
 const initialState: TaskState = {
   tasks: [],
   isLoading: true,
   needsReload: true,
+  error: null,
 };
 
 function TaskContextProvider({ children }: TaskContextProviderProps) {
@@ -56,21 +76,6 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
   const [queryState, setQueryState] = useState<Query>({});
   const tasksOrderArray = ['CREATED_AT', 'A-Z', 'Z-A'];
   const [currentOrderIndex, setCurrentOrderIndex] = useState(0);
-
-  const sortTasks = () => {
-    const newIndex =
-      currentOrderIndex === tasksOrderArray.length - 1
-        ? 0
-        : currentOrderIndex + 1;
-    setCurrentOrderIndex(
-      currentOrderIndex === tasksOrderArray.length - 1
-        ? 0
-        : currentOrderIndex + 1,
-    );
-    const newOrder = tasksOrderArray[newIndex] as 'A-Z' | 'Z-A' | 'CREATED_AT';
-    setQueryState({ ...queryState, orderBy: newOrder });
-    dispatch({ type: 'SET_NEEDS_RELOAD', payload: true });
-  };
 
   const fetchTasks = async (query: Query) => {
     let url = `${process.env.REACT_APP_API_URL}/todos`;
@@ -101,8 +106,9 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
         dispatch({ type: 'SET_TASKS', payload: todos });
       }
     } catch (error) {
-      console.error(error);
-      dispatch({ type: 'SET_IS_LOADING', payload: false });
+      if (error instanceof Error) {
+        dispatch({ type: 'SET_ERROR', payload: `${error.message}` });
+      }
     }
   };
 
@@ -117,7 +123,9 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
         dispatch({ type: 'SET_NEEDS_RELOAD', payload: true });
       }
     } catch (error) {
-      console.error(error);
+      if (error instanceof Error) {
+        dispatch({ type: 'SET_ERROR', payload: `${error.message}` });
+      }
     }
   };
 
@@ -135,7 +143,38 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
         dispatch({ type: 'SET_NEEDS_RELOAD', payload: true });
       }
     } catch (error) {
-      console.error(error);
+      if (error instanceof Error) {
+        dispatch({ type: 'SET_ERROR', payload: `${error.message}` });
+      }
+    }
+  };
+
+  const editTask = async (
+    id: string,
+    payload: { description?: string; state?: 'COMPLETE' | 'INCOMPLETE' },
+  ) => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/todo/${id}`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify(payload),
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+      if (response.status === 202) {
+        dispatch({ type: 'SET_NEEDS_RELOAD', payload: true });
+      }
+      if (response.status === 400) {
+        dispatch({
+          type: 'SET_ERROR',
+          payload: "Can't change the description of a completed task.",
+        });
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        dispatch({ type: 'SET_ERROR', payload: `${error.message}` });
+      }
     }
   };
 
@@ -143,7 +182,19 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
     if (state.needsReload) {
       fetchTasks(queryState);
     }
-  }, [state.needsReload]);
+  }, [state.needsReload, queryState]);
+
+  useEffect(() => {
+    if (state.error) {
+      notification.error({
+        message: 'Error',
+        description: state.error,
+        duration: 5,
+        className: 'custom-notification', // Add a custom class name
+        icon: <i className="custom-icon">X</i>, // Example custom icon
+      });
+    }
+  }, [state.error]);
 
   const value = useMemo(
     () => ({
@@ -154,9 +205,26 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
       queryState,
       setQueryState,
       dispatch,
-      sortTasks,
+      sortTasks: () => {
+        const newIndex =
+          currentOrderIndex === tasksOrderArray.length - 1
+            ? 0
+            : currentOrderIndex + 1;
+        setCurrentOrderIndex(
+          currentOrderIndex === tasksOrderArray.length - 1
+            ? 0
+            : currentOrderIndex + 1,
+        );
+        const newOrder = tasksOrderArray[newIndex] as
+          | 'A-Z'
+          | 'Z-A'
+          | 'CREATED_AT';
+        setQueryState({ ...queryState, orderBy: newOrder });
+        dispatch({ type: 'SET_NEEDS_RELOAD', payload: true });
+      },
+      editTask,
     }),
-    [state],
+    [state, queryState],
   );
 
   return <TaskContext.Provider value={value}>{children}</TaskContext.Provider>;

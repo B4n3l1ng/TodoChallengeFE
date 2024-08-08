@@ -45,13 +45,11 @@ function TaskList() {
         dataSource={state.tasks}
         renderItem={(item) => <TaskItem item={item} />}
       />
-      <Checkbox
-        style={{ textAlign: 'left' }}
-        checked={checkboxState}
-        onChange={onChange}
-      >
-        Hide complete
-      </Checkbox>
+      <div className="hd-complete-check-wrapper">
+        <Checkbox checked={checkboxState} onChange={onChange}>
+          Hide complete
+        </Checkbox>
+      </div>
     </>
   );
 }
