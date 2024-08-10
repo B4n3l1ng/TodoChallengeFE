@@ -17,12 +17,25 @@ function TaskItem({ item }: props) {
     return <p>Loading...</p>;
   }
 
-  const { changeTaskState, editTask } = taskContext;
+  const { changeTaskState, editTask, deleteTask } = taskContext;
 
   const onClickCheckbox = () => {
     changeTaskState(item.id, {
       state: item.state === 'COMPLETE' ? 'INCOMPLETE' : 'COMPLETE',
     });
+  };
+
+  const onSave = async (id: string, state: 'COMPLETE' | 'INCOMPLETE') => {
+    try {
+      await editTask(id, {
+        state,
+        description: newDescription,
+      });
+      setIsEditing(false);
+    } catch (error) {
+      console.log(error);
+      setIsEditing(false);
+    }
   };
 
   return (
@@ -50,12 +63,9 @@ function TaskItem({ item }: props) {
         {isEditing && (
           <Button
             type="primary"
-            onClick={() =>
-              editTask(item.id, {
-                state: item.state,
-                description: newDescription,
-              })
-            }
+            onClick={() => {
+              onSave(item.id, item.state);
+            }}
           >
             Save
           </Button>
@@ -70,7 +80,7 @@ function TaskItem({ item }: props) {
           {isEditing ? 'Cancel' : 'Edit'}
         </Button>
         {!isEditing && (
-          <Button type="primary" danger>
+          <Button type="primary" danger onClick={() => deleteTask(item.id)}>
             Delete
           </Button>
         )}

@@ -33,6 +33,7 @@ interface TaskContextType {
   setQueryState: React.Dispatch<React.SetStateAction<Query>>;
   dispatch: React.Dispatch<TaskAction>;
   sortTasks: () => void;
+  deleteTask: (id: string) => Promise<void>;
 }
 
 notification.config({
@@ -166,10 +167,31 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
         dispatch({ type: 'SET_NEEDS_RELOAD', payload: true });
       }
       if (response.status === 400) {
+        const parsed = await response.json();
         dispatch({
           type: 'SET_ERROR',
-          payload: "Can't change the description of a completed task.",
+          payload: parsed.message,
         });
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        dispatch({ type: 'SET_ERROR', payload: `${error.message}` });
+      }
+    }
+  };
+
+  const deleteTask = async (id: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/todo/${id}`,
+        { method: 'DELETE' },
+      );
+      if (response.status === 204) {
+        dispatch({ type: 'SET_NEEDS_RELOAD', payload: true });
+      }
+      if (response.status === 404) {
+        const parsed = await response.json();
+        dispatch({ type: 'SET_ERROR', payload: parsed.message });
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -190,9 +212,10 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
         message: 'Error',
         description: state.error,
         duration: 5,
-        className: 'custom-notification', // Add a custom class name
-        icon: <i className="custom-icon">X</i>, // Example custom icon
+        className: 'custom-notification',
+        icon: <div className="custom-icon">X</div>,
       });
+      dispatch({ type: 'SET_ERROR', payload: null });
     }
   }, [state.error]);
 
@@ -223,6 +246,7 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
         dispatch({ type: 'SET_NEEDS_RELOAD', payload: true });
       },
       editTask,
+      deleteTask,
     }),
     [state, queryState],
   );

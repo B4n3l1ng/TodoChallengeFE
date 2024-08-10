@@ -67,22 +67,30 @@ body {
   border-radius: 4px;
   background-color: #fff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid red;
 }
 
-.custom-notification .ant-notification-notice {
-  display: flex;
-  align-items: center;
-  padding: 16px;
+.ant-notification-notice-content {
+  margin-top: 1em;
 }
 
-.custom-notification .ant-notification-notice-icon {
-  margin-right: 16px;
+.ant-notification-notice-close-icon {
+  position: fixed;
+  top: 10px;
+  left: 90%;
+}
+
+.ant-notification-notice-message {
+  font-weight: bold;
 }
 
 .custom-notification .custom-icon {
-  font-size: 24px;
-  color: red;
+  color: white;
   position: fixed;
-  top: 10px;
-  left: 10px;
+  top: 5px;
+  left: 49%;
+  border-radius: 50%;
+  background-color: red;
+  width: 1em;
+  height: 1em;
 }
