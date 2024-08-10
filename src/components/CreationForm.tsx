@@ -2,13 +2,14 @@ import { Button, Divider, Form, Input } from 'antd';
 import { useContext } from 'react';
 
 import { TaskContext } from '../contexts/tasks/taskContext';
+import Loader from './Loader';
 
 function TaskForm() {
   const taskContext = useContext(TaskContext);
   const [form] = Form.useForm();
 
   if (!taskContext) {
-    return <p>Loading...</p>;
+    return <Loader />;
   }
 
   const { createTask } = taskContext;

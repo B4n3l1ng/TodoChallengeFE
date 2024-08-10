@@ -1,7 +1,9 @@
-import { Checkbox, CheckboxProps, Divider, List } from 'antd';
+import { Checkbox, CheckboxProps, Divider } from 'antd';
+import { AnimatePresence } from 'framer-motion';
 import { useContext, useState } from 'react';
 
 import { TaskContext } from '../contexts/tasks/taskContext';
+import Loader from './Loader';
 import TaskItem from './TaskItem';
 
 function TaskList() {
@@ -9,7 +11,7 @@ function TaskList() {
   const [checkboxState, setCheckboxState] = useState<boolean>();
 
   if (!taskContext || taskContext.state.isLoading) {
-    return <div>Loading...</div>;
+    return <Loader />;
   }
 
   const { state, sortTasks, setQueryState, dispatch } = taskContext;
@@ -40,12 +42,14 @@ function TaskList() {
           Tasks
         </div>
       </Divider>
-      <List
-        bordered
-        dataSource={state.tasks}
-        renderItem={(item) => <TaskItem item={item} />}
-      />
-
+      <ul>
+        <AnimatePresence>
+          {state.tasks.map((task) => (
+            <TaskItem item={task} key={task.id} />
+          ))}
+        </AnimatePresence>
+      </ul>
+      <Divider />
       <div className="hd-complete-check-wrapper">
         <Checkbox checked={checkboxState} onChange={onChange}>
           Hide complete

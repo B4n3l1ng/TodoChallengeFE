@@ -1,8 +1,10 @@
-import { Button, Checkbox, Input, List, Typography } from 'antd';
+import { Button, Checkbox, Input, Typography } from 'antd';
+import { motion } from 'framer-motion';
 import { useContext, useState } from 'react';
 
 import { TaskContext } from '../contexts/tasks/taskContext';
 import { Task } from '../interfaces/interfaces';
+import Loader from './Loader';
 
 interface props {
   item: Task;
@@ -14,7 +16,7 @@ function TaskItem({ item }: props) {
   const [newDescription, setNewDescription] = useState(item.description);
 
   if (!taskContext) {
-    return <p>Loading...</p>;
+    return <Loader />;
   }
 
   const { changeTaskState, editTask, deleteTask } = taskContext;
@@ -39,7 +41,13 @@ function TaskItem({ item }: props) {
   };
 
   return (
-    <List.Item>
+    <motion.li
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      transition={{ duration: 1 }}
+      className="list-item"
+    >
       <div className="list-item-left">
         <Checkbox
           checked={item.state === 'COMPLETE'}
@@ -85,7 +93,7 @@ function TaskItem({ item }: props) {
           </Button>
         )}
       </div>
-    </List.Item>
+    </motion.li>
   );
 }
 

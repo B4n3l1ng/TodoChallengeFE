@@ -81,7 +81,8 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
         headers: { 'Content-type': 'application/json' },
       });
       if (response.status === 201) {
-        dispatch({ type: 'SET_NEEDS_RELOAD', payload: true });
+        const { newTodo } = await response.json();
+        dispatch({ type: 'ADD_TASK', payload: newTodo });
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -101,7 +102,8 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
         },
       );
       if (response.status === 202) {
-        dispatch({ type: 'SET_NEEDS_RELOAD', payload: true });
+        const { updatedTask } = await response.json();
+        dispatch({ type: 'EDIT_TASK', payload: { ...updatedTask } });
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -121,7 +123,8 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
         },
       );
       if (response.status === 202) {
-        dispatch({ type: 'SET_NEEDS_RELOAD', payload: true });
+        const { updatedTask } = await response.json();
+        dispatch({ type: 'EDIT_TASK', payload: { ...updatedTask, id } });
       }
       if (response.status === 400) {
         const parsed = await response.json();
@@ -144,7 +147,7 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
         { method: 'DELETE' },
       );
       if (response.status === 204) {
-        dispatch({ type: 'SET_NEEDS_RELOAD', payload: true });
+        dispatch({ type: 'DELETE_TASK', payload: id });
       }
       if (response.status === 404) {
         const parsed = await response.json();

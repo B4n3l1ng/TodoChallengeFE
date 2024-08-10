@@ -22,16 +22,19 @@ export type TaskAction =
   | { type: 'SET_TASKS'; payload: Task[] }
   | { type: 'SET_IS_LOADING'; payload: boolean }
   | { type: 'SET_NEEDS_RELOAD'; payload: boolean }
-  | { type: 'SET_ERROR'; payload: string | null };
+  | { type: 'SET_ERROR'; payload: string | null }
+  | { type: 'ADD_TASK'; payload: Task }
+  | { type: 'DELETE_TASK'; payload: string }
+  | { type: 'EDIT_TASK'; payload: Task };
 
 export const reducer: Reducer<TaskState, TaskAction> = (state, action) => {
   switch (action.type) {
     case 'SET_TASKS':
       return {
+        ...state,
         tasks: action.payload,
         isLoading: false,
         needsReload: false,
-        error: null,
       };
     case 'SET_IS_LOADING':
       return { ...state, isLoading: action.payload };
@@ -39,6 +42,25 @@ export const reducer: Reducer<TaskState, TaskAction> = (state, action) => {
       return { ...state, needsReload: action.payload };
     case 'SET_ERROR':
       return { ...state, isLoading: false, error: action.payload };
+    case 'ADD_TASK':
+      return {
+        ...state,
+        isLoading: false,
+        tasks: [...state.tasks, action.payload],
+      };
+    case 'DELETE_TASK':
+      return {
+        ...state,
+        isLoading: false,
+        tasks: state.tasks.filter((task) => task.id !== action.payload),
+      };
+    case 'EDIT_TASK':
+      return {
+        ...state,
+        tasks: state.tasks.map((task) =>
+          task.id === action.payload.id ? action.payload : task,
+        ),
+      };
     default:
       return state;
   }
