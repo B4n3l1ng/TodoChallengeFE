@@ -1,10 +1,11 @@
 import { Button, Divider, Form, Input } from 'antd';
 import { useContext } from 'react';
 
-import { TaskContext } from '../contexts/taskContext';
+import { TaskContext } from '../contexts/tasks/taskContext';
 
 function TaskForm() {
   const taskContext = useContext(TaskContext);
+  const [form] = Form.useForm();
 
   if (!taskContext) {
     return <p>Loading...</p>;
@@ -12,10 +13,15 @@ function TaskForm() {
 
   const { createTask } = taskContext;
 
+  const handleFinish = async (values: { description: string }) => {
+    await createTask(values);
+    form.resetFields();
+  };
+
   return (
     <>
       <Divider>Add Task Form</Divider>
-      <Form className="creation-form" onFinish={createTask}>
+      <Form className="creation-form" form={form} onFinish={handleFinish}>
         <Form.Item
           label="Task description"
           name="description"

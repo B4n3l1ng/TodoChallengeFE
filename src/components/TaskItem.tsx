@@ -1,7 +1,7 @@
 import { Button, Checkbox, Input, List, Typography } from 'antd';
 import { useContext, useState } from 'react';
 
-import { TaskContext } from '../contexts/taskContext';
+import { TaskContext } from '../contexts/tasks/taskContext';
 import { Task } from '../interfaces/interfaces';
 
 interface props {

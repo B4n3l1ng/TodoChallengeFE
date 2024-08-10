@@ -1,40 +1,19 @@
 import { notification } from 'antd';
+import { createContext, useEffect, useMemo, useReducer, useState } from 'react';
+
 import {
-  createContext,
-  ReactNode,
-  Reducer,
-  useEffect,
-  useMemo,
-  useReducer,
-  useState,
-} from 'react';
-
-import { Query, TaskAction, TaskState } from '../interfaces/interfaces';
-
-type ChangeTaskState = (
-  id: string,
-  payload: { state: 'COMPLETE' | 'INCOMPLETE' },
-) => Promise<void>;
-
-interface TaskContextProviderProps {
-  children: ReactNode;
-}
-
-interface TaskContextType {
-  state: TaskState;
-  fetchTasks: (query: Query) => Promise<void>;
-  createTask: (payload: { description: string }) => Promise<void>;
-  changeTaskState: ChangeTaskState;
-  editTask: (
-    id: string,
-    payload: { description?: string; state?: 'COMPLETE' | 'INCOMPLETE' },
-  ) => Promise<void>;
-  queryState: Query;
-  setQueryState: React.Dispatch<React.SetStateAction<Query>>;
-  dispatch: React.Dispatch<TaskAction>;
-  sortTasks: () => void;
-  deleteTask: (id: string) => Promise<void>;
-}
+  ChangeTaskState,
+  CreateTask,
+  DeleteTask,
+  EditTask,
+  FetchTasks,
+  Query,
+  reducer,
+  SortTasks,
+  TaskContextProviderProps,
+  TaskContextType,
+  TaskState,
+} from './taskContextTypes';
 
 notification.config({
   placement: 'bottomLeft',
@@ -46,25 +25,6 @@ export const TaskContext = createContext<TaskContextType | undefined>(
   undefined,
 );
 
-const reducer: Reducer<TaskState, TaskAction> = (state, action) => {
-  switch (action.type) {
-    case 'SET_TASKS':
-      return {
-        tasks: action.payload,
-        isLoading: false,
-        needsReload: false,
-        error: null,
-      };
-    case 'SET_IS_LOADING':
-      return { ...state, isLoading: action.payload };
-    case 'SET_NEEDS_RELOAD':
-      return { ...state, needsReload: action.payload };
-    case 'SET_ERROR':
-      return { ...state, isLoading: false, error: action.payload };
-    default:
-      return state;
-  }
-};
 const initialState: TaskState = {
   tasks: [],
   isLoading: true,
@@ -75,10 +35,10 @@ const initialState: TaskState = {
 function TaskContextProvider({ children }: TaskContextProviderProps) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [queryState, setQueryState] = useState<Query>({});
-  const tasksOrderArray = ['CREATED_AT', 'A-Z', 'Z-A'];
+  const tasksOrderArray = useMemo(() => ['CREATED_AT', 'A-Z', 'Z-A'], []);
   const [currentOrderIndex, setCurrentOrderIndex] = useState(0);
 
-  const fetchTasks = async (query: Query) => {
+  const fetchTasks: FetchTasks = async (query) => {
     let url = `${process.env.REACT_APP_API_URL}/todos`;
 
     const params = new URLSearchParams();
@@ -113,7 +73,7 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
     }
   };
 
-  const createTask = async (payload: { description: string }) => {
+  const createTask: CreateTask = async (payload) => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/todos`, {
         method: 'POST',
@@ -150,10 +110,7 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
     }
   };
 
-  const editTask = async (
-    id: string,
-    payload: { description?: string; state?: 'COMPLETE' | 'INCOMPLETE' },
-  ) => {
+  const editTask: EditTask = async (id, payload) => {
     try {
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/todo/${id}`,
@@ -180,7 +137,7 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
     }
   };
 
-  const deleteTask = async (id: string) => {
+  const deleteTask: DeleteTask = async (id) => {
     try {
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/todo/${id}`,
@@ -219,37 +176,34 @@ function TaskContextProvider({ children }: TaskContextProviderProps) {
     }
   }, [state.error]);
 
-  const value = useMemo(
-    () => ({
+  const value = useMemo(() => {
+    const sortTasks: SortTasks = () => {
+      const newIndex =
+        currentOrderIndex === tasksOrderArray.length - 1
+          ? 0
+          : currentOrderIndex + 1;
+      setCurrentOrderIndex(newIndex);
+      const newOrder = tasksOrderArray[newIndex] as
+        | 'A-Z'
+        | 'Z-A'
+        | 'CREATED_AT';
+      setQueryState({ ...queryState, orderBy: newOrder });
+      dispatch({ type: 'SET_NEEDS_RELOAD', payload: true });
+    };
+
+    return {
       state,
       fetchTasks,
       createTask,
       changeTaskState,
+      editTask,
+      deleteTask,
       queryState,
       setQueryState,
       dispatch,
-      sortTasks: () => {
-        const newIndex =
-          currentOrderIndex === tasksOrderArray.length - 1
-            ? 0
-            : currentOrderIndex + 1;
-        setCurrentOrderIndex(
-          currentOrderIndex === tasksOrderArray.length - 1
-            ? 0
-            : currentOrderIndex + 1,
-        );
-        const newOrder = tasksOrderArray[newIndex] as
-          | 'A-Z'
-          | 'Z-A'
-          | 'CREATED_AT';
-        setQueryState({ ...queryState, orderBy: newOrder });
-        dispatch({ type: 'SET_NEEDS_RELOAD', payload: true });
-      },
-      editTask,
-      deleteTask,
-    }),
-    [state, queryState],
-  );
+      sortTasks,
+    };
+  }, [state, queryState, currentOrderIndex, tasksOrderArray, dispatch]);
 
   return <TaskContext.Provider value={value}>{children}</TaskContext.Provider>;
 }

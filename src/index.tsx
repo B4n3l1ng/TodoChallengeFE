@@ -4,7 +4,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 
 import App from './App';
-import TaskContextProvider from './contexts/taskContext';
+import TaskContextProvider from './contexts/tasks/taskContext';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(

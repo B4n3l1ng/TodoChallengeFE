@@ -1,7 +1,7 @@
 import { Checkbox, CheckboxProps, Divider, List } from 'antd';
 import { useContext, useState } from 'react';
 
-import { TaskContext } from '../contexts/taskContext';
+import { TaskContext } from '../contexts/tasks/taskContext';
 import TaskItem from './TaskItem';
 
 function TaskList() {
@@ -45,6 +45,7 @@ function TaskList() {
         dataSource={state.tasks}
         renderItem={(item) => <TaskItem item={item} />}
       />
+
       <div className="hd-complete-check-wrapper">
         <Checkbox checked={checkboxState} onChange={onChange}>
           Hide complete
