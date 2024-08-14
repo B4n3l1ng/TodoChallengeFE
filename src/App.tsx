@@ -1,13 +1,18 @@
-import TaskForm from './components/CreationForm';
-import TaskList from './components/TaskList';
+import { Route, Routes } from 'react-router-dom';
+
+import ContextWrapper from './contexts/tasks/contextWrapper';
+import HomePage from './pages/HomePage';
+import RegistrationPage from './pages/RegistrationPage';
 
 function App() {
   return (
-    <div className="wrapper">
-      <TaskForm />
+    <ContextWrapper>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
 
-      <TaskList />
-    </div>
+        <Route path="/signup" element={<RegistrationPage />} />
+      </Routes>
+    </ContextWrapper>
   );
 }
 

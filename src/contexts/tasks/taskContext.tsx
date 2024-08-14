@@ -1,5 +1,6 @@
 import { notification } from 'antd';
 import { createContext, useEffect, useMemo, useReducer, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import {
   ContextProviderProps,
@@ -45,6 +46,7 @@ function TaskContextProvider({ children }: ContextProviderProps) {
   const [queryState, setQueryState] = useState<Query>({});
   const tasksOrderArray = useMemo(() => ['CREATED_AT', 'A-Z', 'Z-A'], []);
   const [currentOrderIndex, setCurrentOrderIndex] = useState(0);
+  const navigate = useNavigate();
 
   const getToken = () => {
     return window.localStorage.getItem('token');
@@ -72,9 +74,9 @@ function TaskContextProvider({ children }: ContextProviderProps) {
         } catch {
           // If JSON parsing fails, keep the default error message
         }
-
         if (response.status === 401) {
           // TODO: Redirect to login
+          navigate('/login');
         } else {
           dispatch({ type: 'SET_ERROR', payload: errorMessage });
         }

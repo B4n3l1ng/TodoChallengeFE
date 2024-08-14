@@ -2,10 +2,10 @@ import './index.css';
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 
 import App from './App';
 import AuthContextProvider from './contexts/auth/authContext';
-import TaskContextProvider from './contexts/tasks/taskContext';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(
@@ -13,11 +13,11 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    <AuthContextProvider>
-      <TaskContextProvider>
+    <BrowserRouter>
+      <AuthContextProvider>
         <App />
-      </TaskContextProvider>
-    </AuthContextProvider>
+      </AuthContextProvider>
+    </BrowserRouter>
   </React.StrictMode>,
 );
 
