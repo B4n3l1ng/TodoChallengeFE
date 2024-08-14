@@ -2,7 +2,7 @@ import { ReactNode, Reducer } from 'react';
 
 import { Task } from '../../interfaces/interfaces';
 
-export interface TaskContextProviderProps {
+export interface ContextProviderProps {
   children: ReactNode;
 }
 

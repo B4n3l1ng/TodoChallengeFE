@@ -4,6 +4,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 
 import App from './App';
+import AuthContextProvider from './contexts/auth/authContext';
 import TaskContextProvider from './contexts/tasks/taskContext';
 import reportWebVitals from './reportWebVitals';
 
@@ -12,9 +13,11 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    <TaskContextProvider>
-      <App />
-    </TaskContextProvider>
+    <AuthContextProvider>
+      <TaskContextProvider>
+        <App />
+      </TaskContextProvider>
+    </AuthContextProvider>
   </React.StrictMode>,
 );
 
