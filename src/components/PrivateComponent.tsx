@@ -4,7 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/auth/authContext';
 import Loader from './Loader';
 
-function PrivateComponent({ children }: { children: ReactNode }) {
+function PrivateComponent({ children }: { children: ReactNode }): JSX.Element {
   const { state } = useContext(AuthContext);
 
   if (state.isLoading) {
@@ -12,7 +12,7 @@ function PrivateComponent({ children }: { children: ReactNode }) {
   }
 
   if (state.isAuthenticated) {
-    return { children };
+    return children as JSX.Element;
   }
 
   return <Navigate to="/login" />;

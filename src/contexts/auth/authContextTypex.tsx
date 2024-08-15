@@ -24,7 +24,10 @@ export type authHandlers = (payload: {
 }) => Promise<void>;
 
 export type AuthAction =
-  | { type: 'SET_AUTHENTICATED'; payload: { auth: boolean; user?: UserInfo } }
+  | {
+      type: 'SET_AUTHENTICATED';
+      payload: { auth: boolean; user: UserInfo | null };
+    }
   | { type: 'SET_ISLOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null };
 
@@ -36,7 +39,7 @@ export const reducer: Reducer<AuthState, AuthAction> = (state, action) => {
         error: null,
         isAuthenticated: action.payload.auth,
         isLoading: false,
-        user: action.payload.user ? action.payload.user : null,
+        user: action.payload.user,
       };
     case 'SET_ISLOADING':
       return { ...state, isLoading: action.payload };
@@ -52,4 +55,5 @@ export interface AuthContextType {
   state: AuthState;
   logout: logout;
   registrationHandler: authHandlers;
+  loginHandler: authHandlers;
 }

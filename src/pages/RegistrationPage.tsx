@@ -1,13 +1,15 @@
 import { Button, Divider, Form, Input } from 'antd';
 import { useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { AuthContext } from '../contexts/auth/authContext';
 
 function RegistrationPage() {
   const { registrationHandler } = useContext(AuthContext);
+  const navigate = useNavigate();
   return (
     <>
-      <Divider />
+      <Divider>Registration Form</Divider>
       <Form
         name="register"
         initialValues={{ name: '', email: '', password: '' }}
@@ -43,6 +45,15 @@ function RegistrationPage() {
 
         <Button type="primary" htmlType="submit">
           Create
+        </Button>
+        <br />
+        <Button
+          type="link"
+          onClick={() => {
+            navigate('/login');
+          }}
+        >
+          Already have an account? Login here
         </Button>
       </Form>
     </>

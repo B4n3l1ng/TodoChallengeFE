@@ -17,6 +17,7 @@ export const AuthContext = createContext<AuthContextType>({
   state: initialState,
   logout: async () => {},
   registrationHandler: async () => {},
+  loginHandler: async () => {},
 });
 
 notification.config({
@@ -31,7 +32,6 @@ function AuthContextProvider({ children }: ContextProviderProps) {
 
   const saveToken = (tokenFromLogin: string) => {
     window.localStorage.setItem('token', tokenFromLogin);
-    dispatch({ type: 'SET_AUTHENTICATED', payload: { auth: true } });
   };
 
   const verifyToken = async (tokenFromStorage: string) => {
@@ -39,6 +39,7 @@ function AuthContextProvider({ children }: ContextProviderProps) {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/me`, {
         headers: { Authorization: `Bearer ${tokenFromStorage}` },
       });
+
       if (response.status === 200) {
         const parsed = await response.json();
         dispatch({
@@ -50,7 +51,7 @@ function AuthContextProvider({ children }: ContextProviderProps) {
         dispatch({ type: 'SET_ISLOADING', payload: false });
       }
     } catch (error) {
-      console.log(error);
+      console.log('Error in verifyToken:', error);
       dispatch({ type: 'SET_ISLOADING', payload: false });
       window.localStorage.removeItem('token');
     }
@@ -79,8 +80,36 @@ function AuthContextProvider({ children }: ContextProviderProps) {
     }
   };
 
+  const loginHandler = async (payload: { email: string; password: string }) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const parsed = await response.json();
+
+      if (response.status === 200) {
+        saveToken(parsed.token);
+
+        // Directly update context state and verify token
+        dispatch({ type: 'SET_ISLOADING', payload: true });
+        await verifyToken(parsed.token);
+
+        // Navigate after state is updated
+        navigate('/');
+      } else if (response.status === 401) {
+        dispatch({ type: 'SET_ERROR', payload: parsed.message });
+      }
+    } catch (error) {
+      console.error(error);
+      dispatch({ type: 'SET_ERROR', payload: 'Internal Server Error.' });
+    }
+  };
+
   const logout = async () => {
-    const token = window.localStorage.getItem('authToken');
+    const token = window.localStorage.getItem('token');
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/logout`, {
         method: 'POST',
@@ -91,7 +120,11 @@ function AuthContextProvider({ children }: ContextProviderProps) {
       });
       if (response.status === 200) {
         window.localStorage.removeItem('token');
-        dispatch({ type: 'SET_AUTHENTICATED', payload: { auth: false } });
+        dispatch({
+          type: 'SET_AUTHENTICATED',
+          payload: { auth: false, user: null },
+        });
+        navigate('/login');
       } else {
         const parsed = await response.json();
         dispatch({ type: 'SET_ERROR', payload: parsed.message });
@@ -127,6 +160,10 @@ function AuthContextProvider({ children }: ContextProviderProps) {
     }
   }, [state.error]);
 
+  useEffect(() => {
+    console.log('State inside context:', state);
+  }, [state]);
+
   const authContextValue = useMemo(
     () => ({
       state,
@@ -134,6 +171,7 @@ function AuthContextProvider({ children }: ContextProviderProps) {
       verifyToken,
       saveToken,
       registrationHandler,
+      loginHandler,
     }),
     [state],
   );
