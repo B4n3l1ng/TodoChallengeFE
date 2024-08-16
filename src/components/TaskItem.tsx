@@ -4,30 +4,30 @@ import { useContext, useState } from 'react';
 
 import { TaskContext } from '../contexts/tasks/taskContext';
 import { Task } from '../interfaces/interfaces';
-import Loader from './Loader';
 
 interface props {
   item: Task;
 }
 
 function TaskItem({ item }: props) {
-  const taskContext = useContext(TaskContext);
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [newDescription, setNewDescription] = useState(item.description);
-
-  if (!taskContext) {
-    return <Loader />;
-  }
-
-  const { changeTaskState, editTask, deleteTask } = taskContext;
+  const {
+    changeTaskState,
+    editTask,
+    deleteTask,
+    state: contextState,
+  } = useContext(TaskContext);
+  const [isEditing, setIsEditing] = useState<boolean>(false); // state for conditional rendering of the buttons
+  const [newDescription, setNewDescription] = useState(item.description); // state for the edit input control
 
   const onClickCheckbox = () => {
+    // handler to change the state of a task from Complete to Incomplete and vice-versa
     changeTaskState(item.id, {
       state: item.state === 'COMPLETE' ? 'INCOMPLETE' : 'COMPLETE',
     });
   };
 
   const onSave = async (id: string, state: 'COMPLETE' | 'INCOMPLETE') => {
+    // handler for the save button, editing the task according to it's id, state and description
     try {
       await editTask(id, {
         state,
@@ -41,7 +41,7 @@ function TaskItem({ item }: props) {
   };
 
   return (
-    <motion.li
+    <motion.li // settings for the animation
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
@@ -50,10 +50,10 @@ function TaskItem({ item }: props) {
     >
       <div className="list-item-left">
         <Checkbox
-          checked={item.state === 'COMPLETE'}
+          checked={item.state === 'COMPLETE'} // change the state of the checkbox according to the item state
           onChange={onClickCheckbox}
         />
-        {!isEditing ? (
+        {!isEditing ? ( // conditionally render normal text with the description, or the input to edit the task
           <Typography className="list-item-description">
             {item.description}
           </Typography>
@@ -68,12 +68,13 @@ function TaskItem({ item }: props) {
       </div>
 
       <div className="btn-group">
-        {isEditing && (
+        {isEditing && ( // Conditionally render the Save button
           <Button
             type="primary"
             onClick={() => {
               onSave(item.id, item.state);
             }}
+            loading={contextState.isLoading}
           >
             Save
           </Button>
@@ -87,8 +88,13 @@ function TaskItem({ item }: props) {
         >
           {isEditing ? 'Cancel' : 'Edit'}
         </Button>
-        {!isEditing && (
-          <Button type="primary" danger onClick={() => deleteTask(item.id)}>
+        {!isEditing && ( // conditionally render the delete buton
+          <Button
+            type="primary"
+            danger
+            onClick={() => deleteTask(item.id)}
+            loading={contextState.isLoading}
+          >
             Delete
           </Button>
         )}

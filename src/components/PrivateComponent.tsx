@@ -7,6 +7,8 @@ import Loader from './Loader';
 function PrivateComponent({ children }: { children: ReactNode }): JSX.Element {
   const { state } = useContext(AuthContext);
 
+  // Returns a spinner is application is still loading, returns the children if the user is authenticated, redirecting to Login page if they aren't
+
   if (state.isLoading) {
     return <Loader />;
   }

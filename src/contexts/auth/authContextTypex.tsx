@@ -1,11 +1,13 @@
 import { Reducer } from 'react';
 
-export interface UserInfo {
+// user information interface
+interface UserInfo {
   name: string;
   email: string;
   id: string;
 }
 
+// authContext state interface
 export interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
@@ -13,17 +15,26 @@ export interface AuthState {
   error: string | null;
 }
 
-export type saveToken = (token: string) => void;
+// auth context function types
+type saveToken = (token: string) => void;
 
-export type logout = () => Promise<void>;
+type logout = () => Promise<void>;
 
-export type authHandlers = (payload: {
+type authHandlers = (payload: {
   name?: string;
   email: string;
   password: string;
 }) => Promise<void>;
 
-export type AuthAction =
+type EditHandler = (payload: {
+  newName?: string;
+  newEmail?: string;
+  newPassword?: string;
+  currentPassword: string;
+}) => Promise<void>;
+
+// auth context reducer types
+type AuthAction =
   | {
       type: 'SET_AUTHENTICATED';
       payload: { auth: boolean; user: UserInfo | null };
@@ -31,6 +42,7 @@ export type AuthAction =
   | { type: 'SET_ISLOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null };
 
+// auth context reducer function
 export const reducer: Reducer<AuthState, AuthAction> = (state, action) => {
   switch (action.type) {
     case 'SET_AUTHENTICATED':
@@ -50,10 +62,12 @@ export const reducer: Reducer<AuthState, AuthAction> = (state, action) => {
   }
 };
 
+// AuthContextType for it's value
 export interface AuthContextType {
   saveToken: saveToken;
   state: AuthState;
   logout: logout;
   registrationHandler: authHandlers;
   loginHandler: authHandlers;
+  editHandler: EditHandler;
 }

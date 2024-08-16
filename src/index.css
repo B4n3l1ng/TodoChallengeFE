@@ -120,8 +120,51 @@ body {
   height: 1em;
 }
 
+.custom-notification-success .custom-icon {
+  color: white;
+  position: fixed;
+  top: 5px;
+  left: 49%;
+  width: 1em;
+  height: 1em;
+}
+
 .column {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+.navbar {
+  width: 100%;
+  border: 1px solid rgba(22, 119, 255, 255);
+  background-color: rgba(22, 119, 255, 255);
+  color: white;
+}
+
+.list div {
+  display: flex;
+  gap: 1em;
+}
+ul.list {
+  display: flex;
+  list-style: none;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1em 0.5em;
+}
+
+.profile-btn {
+  border-color: #28a745 !important;
+  background-color: #28a745 !important;
+  color: white !important;
+}
+
+.profile-btn:hover {
+  border-color: #3ccf58 !important;
+  background-color: #3ccf58 !important;
+}
+
+.sorter:hover {
+  cursor: pointer;
 }

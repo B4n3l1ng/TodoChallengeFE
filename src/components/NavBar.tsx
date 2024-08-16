@@ -1,5 +1,5 @@
 import { Button } from 'antd';
-import { useContext, useEffect } from 'react';
+import { useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { AuthContext } from '../contexts/auth/authContext';
@@ -7,31 +7,36 @@ import { AuthContext } from '../contexts/auth/authContext';
 function NavBar() {
   const { state, logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    console.log('NavBar state:', state); // Log state changes
-  }, [state]);
+  const location = useLocation(); // necessary to check on current location to change buttons available
 
   return (
-    <nav style={{ width: '100%', border: '1px solid blue' }}>
-      <ul
-        style={{
-          display: 'flex',
-          listStyle: 'none',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          margin: '1em 0.5em',
-        }}
-      >
+    <nav className="navbar">
+      <ul className="list">
         {state.isAuthenticated && !state.isLoading ? (
           <>
             <li>Welcome, {state.user?.name}!</li>
-            <li>
-              <Button type="primary" danger onClick={logout}>
-                Logout
-              </Button>
-            </li>
+            <div>
+              <li>
+                {location.pathname === '/profile' ? (
+                  <Button type="default" className="profile-btn">
+                    Back to tasks
+                  </Button>
+                ) : (
+                  <Button
+                    type="default"
+                    className="profile-btn"
+                    onClick={() => navigate('/profile')}
+                  >
+                    Edit Profile
+                  </Button>
+                )}
+              </li>
+              <li>
+                <Button type="primary" danger onClick={logout}>
+                  Logout
+                </Button>
+              </li>
+            </div>
           </>
         ) : (
           <>
