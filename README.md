@@ -14,7 +14,7 @@ Follow these steps to set up and run the project:
 
    Open your terminal and run:
 
-   `npm install`
+   `git clone https://github.com/B4n3l1ng/TodoChallengeFE.git`
 
 2. **Install Dependencies**
 
